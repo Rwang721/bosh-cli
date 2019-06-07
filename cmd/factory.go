@@ -43,6 +43,11 @@ func (f Factory) New(args []string) (Cmd, error) {
 			fillerLen = 0
 		}
 
+		AddCommandForCompletion(c.Name +
+			strings.Repeat(" ", 25-len(c.Name)) +
+			" - " +
+			c.ShortDescription)
+
 		c.ShortDescription += strings.Repeat(" ", fillerLen+1) + docsURL
 	}
 
