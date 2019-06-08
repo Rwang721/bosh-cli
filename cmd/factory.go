@@ -33,22 +33,30 @@ func (f Factory) New(args []string) (Cmd, error) {
 
 	parser := goflags.NewParser(boshOpts, goflags.HelpFlag|goflags.PassDoubleDash)
 
+	// Calculate optimal padding between sections in help output.
+	descPaddingLength := 0
+	namePaddingLength := 0
 	for _, c := range parser.Commands() {
-		docsURL := "https://bosh.io/docs/cli-v2#" + c.Name
-
-		c.LongDescription = c.ShortDescription + "\n\n" + docsURL
-
-		fillerLen := 50 - len(c.ShortDescription)
-		if fillerLen < 0 {
-			fillerLen = 0
+		if descPaddingLength < len(c.ShortDescription) {
+			descPaddingLength = len(c.ShortDescription)
 		}
 
-		AddCommandForCompletion(c.Name +
-			strings.Repeat(" ", 25-len(c.Name)) +
-			" - " +
-			c.ShortDescription)
+		if namePaddingLength < len(c.Name) {
+			namePaddingLength = len(c.Name)
+		}
+	}
 
-		c.ShortDescription += strings.Repeat(" ", fillerLen+1) + docsURL
+	for _, c := range parser.Commands() {
+		// Construct tab completion text.
+		pad := namePaddingLength - len(c.Name)
+		cmd := c.Name + strings.Repeat(" ", pad) + " - " + c.ShortDescription
+		AddCommandForCompletion(cmd)
+
+		// Construct help subcommand text.
+		pad = descPaddingLength - len(c.ShortDescription) + 1
+		docsURL := "https://bosh.io/docs/cli-v2#" + c.Name
+		c.LongDescription = c.ShortDescription + "\n\n" + docsURL
+		c.ShortDescription += strings.Repeat(" ", pad) + docsURL
 	}
 
 	parser.CommandHandler = func(command goflags.Commander, extraArgs []string) error {
