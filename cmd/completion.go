@@ -2,15 +2,16 @@ package cmd
 
 import (
 	"fmt"
+
+	"github.com/cloudfoundry/bosh-cli/completion"
 )
 
-var commands []string
-
 type CompletionCmd struct {
+	compl *completion.Completion
 }
 
-func NewCompletionCmd() CompletionCmd {
-	return CompletionCmd{}
+func NewCompletionCmd(c *completion.Completion) CompletionCmd {
+	return CompletionCmd{compl: c}
 }
 
 func (c CompletionCmd) Run(opts CompletionOpts) error {
@@ -30,11 +31,7 @@ func (c CompletionCmd) printBoshOpts() {
 }
 
 func (c CompletionCmd) printBoshCommands() {
-	for _, v := range commands {
+	for _, v := range c.compl.Commands {
 		fmt.Println(v)
 	}
-}
-
-func AddCommandForCompletion(name string) {
-	commands = append(commands, name)
 }

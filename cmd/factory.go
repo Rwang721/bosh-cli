@@ -7,16 +7,19 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/cloudfoundry/bosh-cli/completion"
+
 	// Should only be imported here to avoid leaking use of goflags through project
 	goflags "github.com/jessevdk/go-flags"
 )
 
 type Factory struct {
-	deps BasicDeps
+	deps  BasicDeps
+	compl *completion.Completion
 }
 
 func NewFactory(deps BasicDeps) Factory {
-	return Factory{deps: deps}
+	return Factory{deps: deps, compl: completion.NewCompletion()}
 }
 
 func (f Factory) New(args []string) (Cmd, error) {
@@ -50,7 +53,8 @@ func (f Factory) New(args []string) (Cmd, error) {
 		// Construct tab completion text.
 		pad := namePaddingLength - len(c.Name)
 		cmd := c.Name + strings.Repeat(" ", pad) + " - " + c.ShortDescription
-		AddCommandForCompletion(cmd)
+
+		f.compl.AddCommand(cmd)
 
 		// Construct help subcommand text.
 		pad = descPaddingLength - len(c.ShortDescription) + 1
@@ -141,5 +145,5 @@ func (f Factory) New(args []string) (Cmd, error) {
 		cmdOpts = &MessageOpts{Message: helpText.String()}
 	}
 
-	return NewCmd(*boshOpts, cmdOpts, f.deps), err
+	return NewCmd(*boshOpts, cmdOpts, f.deps, f.compl), err
 }

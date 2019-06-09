@@ -6,6 +6,8 @@ import (
 
 	"github.com/cppforlife/go-patch/patch"
 
+	"github.com/cloudfoundry/bosh-cli/completion"
+
 	cmdconf "github.com/cloudfoundry/bosh-cli/cmd/config"
 	"github.com/cloudfoundry/bosh-cli/crypto"
 	boshdir "github.com/cloudfoundry/bosh-cli/director"
@@ -26,11 +28,15 @@ type Cmd struct {
 	BoshOpts BoshOpts
 	Opts     interface{}
 
-	deps BasicDeps
+	deps  BasicDeps
+	compl *completion.Completion
 }
 
-func NewCmd(boshOpts BoshOpts, opts interface{}, deps BasicDeps) Cmd {
-	return Cmd{boshOpts, opts, deps}
+func NewCmd(boshOpts BoshOpts,
+	opts interface{},
+	deps BasicDeps,
+	compl *completion.Completion) Cmd {
+	return Cmd{boshOpts, opts, deps, compl}
 }
 
 type cmdConveniencePanic struct {
@@ -53,6 +59,7 @@ func (c Cmd) Execute() (cmdErr error) {
 	c.configureFS()
 
 	deps := c.deps
+	compl := c.compl
 
 	switch opts := c.Opts.(type) {
 	case *EnvironmentOpts:
@@ -448,7 +455,7 @@ func (c Cmd) Execute() (cmdErr error) {
 		return NewVariablesCmd(deps.UI, c.deployment()).Run(*opts)
 
 	case *CompletionOpts:
-		return NewCompletionCmd().Run(*opts)
+		return NewCompletionCmd(compl).Run(*opts)
 
 	default:
 		return fmt.Errorf("Unhandled command: %#v", c.Opts)
