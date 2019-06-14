@@ -10,8 +10,13 @@ _bosh_complete()
   cur_word="${COMP_WORDS[COMP_CWORD]}"
   prev_word="${COMP_WORDS[COMP_CWORD-1]}"
 
-  # Only perform completion if the current word starts with a dash ('-'),
-  # meaning that the user is trying to complete an option.
+  # Only perform completion if the current word starts with a dash ('-') or
+  # blank, and the previous word is "bosh". This means that that the user is
+  # trying to complete an option or command, respectively.
+  if [[ "${prev_word}" != "bosh" ]]; then
+    return 0
+  fi
+
   case "${cur_word}" in
     -*)
       # Generate a list of types it supports
