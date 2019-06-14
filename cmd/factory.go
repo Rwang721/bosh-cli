@@ -145,5 +145,48 @@ func (f Factory) New(args []string) (Cmd, error) {
 		cmdOpts = &MessageOpts{Message: helpText.String()}
 	}
 
+	f.addRootArgsCompletion(boshOpts)
+
 	return NewCmd(*boshOpts, cmdOpts, f.deps, f.compl), err
+}
+
+// TODO(CTZ):
+// Improve the way short root args are handled. Ideally, they should be
+// alongside the long args, and not be on their own line. One approach is to
+// generate the short args separate from the long args, and invoke that in the
+// `completion.bash` script.
+
+func (f *Factory) addRootArgsCompletion(b *BoshOpts) {
+	var (
+		max  int
+		tags []reflect.StructTag
+	)
+
+	t := reflect.TypeOf(*b)
+
+	for i := 0; i < t.NumField(); i++ {
+		tag := t.Field(i).Tag
+		tags = append(tags, tag)
+
+		long := tag.Get("long")
+		llen := len(long)
+		if llen > max {
+			max = llen
+		}
+	}
+
+	for _, t := range tags {
+		long := t.Get("long")
+		short := t.Get("short")
+		desc := t.Get("description")
+
+		llen := len(long)
+
+		if llen > 0 {
+			f.compl.AddRootArgs("--" + long + strings.Repeat(" ", max-llen) + " - " + desc)
+		}
+		if len(short) > 0 {
+			f.compl.AddRootArgs("-" + short + " - " + desc)
+		}
+	}
 }

@@ -25,9 +25,9 @@ func (c CompletionCmd) Run(opts CompletionOpts) error {
 }
 
 func (c CompletionCmd) printBoshOpts() {
-	fmt.Println("--foo")
-	fmt.Println("--bar")
-	fmt.Println("--baz")
+	for _, v := range c.compl.RootArgs {
+		fmt.Println(v)
+	}
 }
 
 func (c CompletionCmd) printBoshCommands() {
