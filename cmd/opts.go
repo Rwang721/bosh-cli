@@ -1108,7 +1108,8 @@ type VariablesOpts struct {
 }
 
 type CompletionOpts struct {
-	Root bool `long:"root-args" short:"r" description:"Print the root args"`
+	Root    bool   `long:"root-args" short:"r" description:"Print the root args"`
+	Command string `long:"command" short:"c" description:"Print the args for a command"`
 	cmd
 }
 

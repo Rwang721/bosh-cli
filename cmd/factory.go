@@ -55,6 +55,7 @@ func (f Factory) New(args []string) (Cmd, error) {
 		cmd := c.Name + strings.Repeat(" ", pad) + " - " + c.ShortDescription
 
 		f.compl.AddCommand(cmd)
+		f.addArgsForCommand(boshOpts, c.Name)
 
 		// Construct help subcommand text.
 		pad = descPaddingLength - len(c.ShortDescription) + 1
@@ -187,6 +188,51 @@ func (f *Factory) addRootArgsCompletion(b *BoshOpts) {
 		}
 		if len(short) > 0 {
 			f.compl.AddRootArgs("-" + short + " - " + desc)
+		}
+	}
+}
+
+func (f *Factory) addArgsForCommand(b *BoshOpts, name string) {
+	var (
+		max        int
+		tags       []reflect.StructTag
+		structType reflect.Type
+	)
+
+	t := reflect.TypeOf(*b)
+
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		tag := field.Tag
+		if cmd, found := tag.Lookup("command"); found && strings.Compare(cmd, name) == 0 {
+			structType = field.Type
+			break
+		}
+	}
+
+	for i := 0; i < structType.NumField(); i++ {
+		tag := structType.Field(i).Tag
+		tags = append(tags, tag)
+
+		long := tag.Get("long")
+		llen := len(long)
+		if llen > max {
+			max = llen
+		}
+	}
+
+	for _, t := range tags {
+		long := t.Get("long")
+		short := t.Get("short")
+		desc := t.Get("description")
+
+		llen := len(long)
+
+		if llen > 0 {
+			f.compl.AddCommandArgs(name, "--"+long+strings.Repeat(" ", max-llen)+" - "+desc)
+		}
+		if len(short) > 0 {
+			f.compl.AddCommandArgs(name, "-"+short+" - "+desc)
 		}
 	}
 }

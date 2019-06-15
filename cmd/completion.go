@@ -15,9 +15,12 @@ func NewCompletionCmd(c *completion.Completion) CompletionCmd {
 }
 
 func (c CompletionCmd) Run(opts CompletionOpts) error {
-	if opts.Root {
+	switch {
+	case opts.Root:
 		c.printBoshOpts()
-	} else {
+	case opts.Command != "":
+		c.printArgsForSubcommand(opts.Command)
+	default:
 		c.printBoshCommands()
 	}
 
@@ -26,6 +29,12 @@ func (c CompletionCmd) Run(opts CompletionOpts) error {
 
 func (c CompletionCmd) printBoshOpts() {
 	for _, v := range c.compl.RootArgs {
+		fmt.Println(v)
+	}
+}
+
+func (c CompletionCmd) printArgsForSubcommand(cmd string) {
+	for _, v := range c.compl.CommandArgs[cmd] {
 		fmt.Println(v)
 	}
 }
