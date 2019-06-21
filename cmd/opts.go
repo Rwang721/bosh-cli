@@ -1108,8 +1108,12 @@ type VariablesOpts struct {
 }
 
 type CompletionOpts struct {
-	Root    bool   `long:"root-args" short:"r" description:"Print the root args"`
-	Command string `long:"command" short:"c" description:"Print the args for a command"`
+	Export bool `long:"export" description:"Print the completion script meant to be sourced by the shell"`
+
+	RootArgs    bool   `long:"root-args" short:"r" description:"Print the root args"`
+	Commands    bool   `long:"commands" short:"c" description:"Print all Bosh commands"`
+	CommandArgs string `long:"command-args" description:"Print the args for a command"`
+
 	cmd
 }
 
