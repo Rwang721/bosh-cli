@@ -53,7 +53,7 @@ func (f Factory) httpClient(factoryConfig FactoryConfig, config cmdconf.Config, 
 		f.logger.Debug(f.logTag, "Using custom root CAs")
 	}
 
-	rawClient := httpclient.CreateDefaultClient(certPool)
+	rawClient := httpclient.CreateDefaultClientInsecureSkipVerify()
 	authAdjustment := NewAuthRequestAdjustment(
 		factoryConfig.TokenFunc,
 		factoryConfig.Client,
