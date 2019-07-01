@@ -20,6 +20,8 @@ type Config struct {
 	ClientSecret string
 
 	CACert string
+
+	FloatingIP string
 }
 
 func NewConfigFromURL(url string) (Config, error) {

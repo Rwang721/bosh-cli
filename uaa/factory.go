@@ -1,9 +1,12 @@
 package uaa
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net"
+	"net/http"
 	"net/url"
+	"strings"
 
 	"time"
 
@@ -52,6 +55,9 @@ func (f Factory) httpClient(config Config) (Client, error) {
 	}
 
 	rawClient := httpclient.CreateDefaultClientInsecureSkipVerify()
+
+	SetTransportMapping(rawClient.Transport.(*http.Transport), config.FloatingIP, config.Host)
+
 	retryClient := httpclient.NewNetworkSafeRetryClient(rawClient, 5, 500*time.Millisecond, f.logger)
 
 	httpClient := httpclient.NewHTTPClient(retryClient, f.logger)
@@ -63,4 +69,17 @@ func (f Factory) httpClient(config Config) (Client, error) {
 	}
 
 	return NewClient(endpoint.String(), config.Client, config.ClientSecret, httpClient, f.logger), nil
+}
+
+func SetTransportMapping(transport *http.Transport, fip, hostname string) {
+	transport.TLSClientConfig.ServerName = hostname
+	transport.DialTLS = func(network, addr string) (conn net.Conn, e error) {
+		parts := strings.Split(addr, ":")
+		host := fip
+		port := "443"
+		if len(parts) > 1 {
+			port = parts[1]
+		}
+		return tls.Dial(network, strings.Join([]string{host, port}, ":"), transport.TLSClientConfig)
+	}
 }
